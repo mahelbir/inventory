@@ -1,0 +1,27 @@
+﻿@model Inventory.Models.Product
+
+@{
+    ViewData["Title"] = "Ürün #" + Model.ProductCode;
+}
+
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Message"]
+    </div>
+}
+
+
+<div class="card">
+    <div class="card-body">
+        <form asp-action="Edit" autocomplete="off">
+            <input type="hidden" asp-for="ProductID" />
+            <partial name="Form" />
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

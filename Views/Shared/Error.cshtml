@@ -1,0 +1,13 @@
+﻿@model ErrorViewModel
+@{
+    ViewData["Title"] = "Hata!";
+}
+
+@if (Model == null)
+{
+    <div class="alert alert-danger">Bir hata oluştu!</div>
+}
+else
+{
+    <div class="alert alert-danger">@Model.Message</div>
+}

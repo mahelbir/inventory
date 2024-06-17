@@ -1,0 +1,17 @@
+﻿@model Inventory.Models.Product
+
+@{
+    ViewData["Title"] = "Ürün Oluştur";
+}
+
+<div class="card">
+    <div class="card-body">
+        <form asp-action="Create" autocomplete="off">
+            <partial name="Form" />
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
