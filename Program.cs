@@ -26,10 +26,11 @@ app.UseRouting();
 
 app.UseAuthorization();
 
+// Custom HTTP Error Page
 app.UseStatusCodePagesWithReExecute("/Home/Error", "?code={0}");
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Products}/{action=Index}/{id?}");
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();

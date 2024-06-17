@@ -6,13 +6,13 @@ namespace Inventory.Controllers
     public class HomeController : Controller
     {
 
-        //Anasayfa
+        // Anasayfa
         public IActionResult Index()
         {
             return View();
         }
 
-        //Hata sayfasý
+        // HTTP hata sayfalarý
         public IActionResult Error(int code = 0)
         {
             string message;

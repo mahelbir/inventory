@@ -27,7 +27,7 @@ namespace Inventory.Controllers
         // Silme
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || id < 1)
+            if (!IsValidId(id))
             {
                 return BadRequest();
             }
@@ -70,6 +70,7 @@ namespace Inventory.Controllers
                 {
                     if (ex.InnerException is SqlException sqlException)
                     {
+                        // Duplicate Primary Key
                         if (sqlException.Number == 2627 || sqlException.Number == 2601)
                         {
                             ModelState.AddModelError("ProductCode", "Aynı ürün koduna sahip bir kayıt zaten mevcut!");
@@ -97,7 +98,7 @@ namespace Inventory.Controllers
         // Düzenleme formu
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || id < 1)
+            if (!IsValidId(id))
             {
                 return BadRequest();
             }
@@ -117,7 +118,7 @@ namespace Inventory.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("ProductID,ProductCode,Name,Description,Price")] Product product)
         {
-            // GET ve POST ID birbiriyle eşleşmeli
+            // GET ve POST ID eşleşmeli
             if (id != product.ProductID)
             {
                 return BadRequest();
@@ -126,7 +127,7 @@ namespace Inventory.Controllers
             if (ModelState.IsValid)
             {
                 // Ürün kodu değiştiyse ve yeni ürün kodu zaten farklı bir ürüne aitse hata göster
-                if (await _context.Products.AnyAsync(e => e.ProductCode == product.ProductCode && e.ProductID != id))
+                if (await _context.Products.AnyAsync(m => m.ProductCode == product.ProductCode && m.ProductID != id))
                 {
                     ModelState.AddModelError("ProductCode", "Bu ürün kodu kullanımda!");
                 }
@@ -138,6 +139,7 @@ namespace Inventory.Controllers
                         await _context.SaveChangesAsync();
 
                         // Kayıt başarılıysa flash mesajı göster
+                        TempData["Status"] = "success";
                         TempData["Message"] = "Kayıt güncellendi.";
                     }
                     catch (Exception)
@@ -148,6 +150,11 @@ namespace Inventory.Controllers
             }
 
             return View(product);
+        }
+
+        private static bool IsValidId(int? id)
+        {
+            return id != null && id > 0;
         }
     }
 
