@@ -96,11 +96,13 @@ namespace Inventory.Controllers
                         // Duplicate Primary Key
                         if (sqlException.Number == 2627 || sqlException.Number == 2601)
                         {
+                            stock.StockCode = "";
                             ModelState.AddModelError("StockCode", "Aynı stok koduna sahip bir stok zaten mevcut!");
                         }
                         // Foreign key
                         else if (sqlException.Number == 547)
                         {
+                            stock.ProductCode = "";
                             ModelState.AddModelError("ProductCode", "Geçersiz ürün kodu! Lütfen geçerli bir ürün kodu giriniz.");
                         }
                     }
@@ -173,11 +175,13 @@ namespace Inventory.Controllers
                         // Duplicate Primary Key
                         if (sqlException.Number == 2627 || sqlException.Number == 2601)
                         {
+                            stock.StockCode = "";
                             ModelState.AddModelError("StockCode", "Yeni stok koduna sahip bir stok zaten mevcut!");
                         }
                         // Foreign key
                         else if (sqlException.Number == 547)
                         {
+                            stock.ProductCode = "";
                             ModelState.AddModelError("ProductCode", "Geçersiz ürün kodu! Lütfen geçerli bir ürün kodu giriniz.");
                         }
                     }

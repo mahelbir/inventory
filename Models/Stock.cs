@@ -19,8 +19,8 @@ namespace Inventory.Models
         [Range(1, int.MaxValue, ErrorMessage = "Miktar geçersiz.")]
         public int Quantity { get; set; }
 
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTime UpdatedAt { get; set; }
+
         public DateTime CreatedAt { get; set; }
     }
 

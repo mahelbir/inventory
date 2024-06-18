@@ -74,6 +74,7 @@ namespace Inventory.Controllers
                         // Duplicate Primary Key
                         if (sqlException.Number == 2627 || sqlException.Number == 2601)
                         {
+                            product.ProductCode = "";
                             ModelState.AddModelError("ProductCode", "Aynı ürün koduna sahip bir ürün zaten mevcut!");
                         }
                     }

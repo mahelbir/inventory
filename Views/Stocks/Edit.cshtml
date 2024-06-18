@@ -1,7 +1,7 @@
 ﻿@model Inventory.Models.Stock
 
 @{
-    ViewData["Title"] = "Stok #" + Model.StockCode;
+    ViewData["Title"] = "Stok #" + Model.StockID;
 }
 
 
@@ -20,6 +20,9 @@
             <input type="hidden" asp-for="CreatedAt" />
             <partial name="_Form" />
         </form>
+    </div>
+    <div class="card-footer">
+        <a asp-action="Index" asp-route-productCode="@Model.ProductCode" class="btn btn-sm btn-dark"><i class="fas fa-arrow-left"></i> Stok Listesi</a>
     </div>
 </div>
 

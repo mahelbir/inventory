@@ -15,7 +15,7 @@ namespace Inventory.Models
         public string Name { get; set; }
 
         [Required(ErrorMessage = "Fiyat gereklidir.")]
-        [Range(0, 999999.99, ErrorMessage = "Fiyat 0 ile 999999.99 arasında olmalıdır.")]
+        [Range(0, 9999999999999999.99, ErrorMessage = "Geçersiz fiyat.")]
         public decimal Price { get; set; }
 
         [StringLength(255, ErrorMessage = "Açıklama en fazla 255 karakter olabilir.")]
