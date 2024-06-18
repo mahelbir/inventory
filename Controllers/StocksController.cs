@@ -6,23 +6,34 @@ using Inventory.Utils;
 
 namespace Inventory.Controllers
 {
-    public class ProductsController : Controller
+    public class StocksController : Controller
     {
         private readonly ApplicationDbContext _context;
 
-        public ProductsController(ApplicationDbContext context)
+        public StocksController(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        // Listeleme
-        public async Task<IActionResult> Index()
+        // Ürüne göre listeleme
+        public async Task<IActionResult> Index(string productCode)
         {
-            return View(await _context.Products
-                // son eklenene göre sırala
-                .OrderByDescending(m => m.ProductID)
-                .ToListAsync()
-             );
+            if (!Helper.IsValidCode(productCode))
+            {
+                return BadRequest();
+            }
+
+            var stocks = await _context.Stocks
+                // ilgili ürün
+                .Where(s => s.ProductCode == productCode)
+                // son güncellemeye göre listele
+                .OrderByDescending(m => m.UpdatedAt)
+                .ToListAsync();
+
+            ViewBag.ProductCode = productCode;
+            ViewBag.Total = stocks.Sum(s => s.Quantity);
+
+            return View(stocks);
         }
 
         // Silme
@@ -34,37 +45,48 @@ namespace Inventory.Controllers
             }
 
             // Kayıt varsa sil
-            var product = await _context.Products.FindAsync(id);
-            if (product != null)
+            var stock = await _context.Stocks.FindAsync(id);
+            string productCode = "";
+            if (stock != null)
             {
-                _context.Products.Remove(product);
+                productCode = stock.ProductCode;
+                _context.Stocks.Remove(stock);
                 await _context.SaveChangesAsync();
             }
 
             // Listeye yönlendir
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Index", new { productCode = productCode });
         }
 
         // Oluşturma formu
-        public IActionResult Create()
+        public IActionResult Create(string productCode)
         {
-            return View();
+            if (!Helper.IsValidCode(productCode))
+            {
+                return BadRequest();
+            }
+
+            var stock = new Stock { ProductCode = productCode, Quantity = 1 };
+
+            return View(stock);
         }
 
         // Oluşturma işlemi
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ProductID,ProductCode,Name,Description,Price")] Product product)
+        public async Task<IActionResult> Create([Bind("StockCode,ProductCode,Quantity")] Stock stock)
         {
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Add(product);
+                    stock.CreatedAt = DateTime.Now;
+                    stock.UpdatedAt = DateTime.Now;
+                    _context.Add(stock);
                     await _context.SaveChangesAsync();
 
                     // Kayıt başarılıysa listeye yönlendir
-                    return RedirectToAction(nameof(Index));
+                    return RedirectToAction("Index", new { productCode = stock.ProductCode });
                 }
                 // Kayıt hatalarını yakala
                 catch (DbUpdateException ex)
@@ -74,7 +96,12 @@ namespace Inventory.Controllers
                         // Duplicate Primary Key
                         if (sqlException.Number == 2627 || sqlException.Number == 2601)
                         {
-                            ModelState.AddModelError("ProductCode", "Aynı ürün koduna sahip bir ürün zaten mevcut!");
+                            ModelState.AddModelError("StockCode", "Aynı stok koduna sahip bir stok zaten mevcut!");
+                        }
+                        // Foreign key
+                        else if (sqlException.Number == 547)
+                        {
+                            ModelState.AddModelError("ProductCode", "Geçersiz ürün kodu! Lütfen geçerli bir ürün kodu giriniz.");
                         }
                     }
 
@@ -93,7 +120,7 @@ namespace Inventory.Controllers
             }
 
             // Girilen bilgileri kaybetmeden formu göster
-            return View(product);
+            return View(stock);
         }
 
         // Düzenleme formu
@@ -105,47 +132,53 @@ namespace Inventory.Controllers
             }
 
             // Kayıt mevcut değilse hata göster
-            var product = await _context.Products.FindAsync(id);
-            if (product == null)
+            var stock = await _context.Stocks.FindAsync(id);
+            if (stock == null)
             {
                 return NotFound();
             }
 
-            return View(product);
+            return View(stock);
         }
 
         // Düzenleme işlemi
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ProductID,ProductCode,Name,Description,Price")] Product product)
+        public async Task<IActionResult> Edit(int id, [Bind("StockID,StockCode,ProductCode,Quantity,CreatedAt")] Stock stock)
         {
             // GET ve POST ID eşleşmeli
-            if (id != product.ProductID)
+            if (id != stock.StockID)
             {
                 return BadRequest();
             }
 
             if (ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(product);
-                    await _context.SaveChangesAsync();
+                    try
+                    {
 
-                    // Kayıt başarılıysa flash mesajı göster
-                    TempData["Status"] = "success";
-                    TempData["Message"] = "Ürün güncellendi.";
-                }
+                        stock.UpdatedAt = DateTime.Now;
+                        _context.Update(stock);
+                        await _context.SaveChangesAsync();
+
+                        // Kayıt başarılıysa flash mesajı göster
+                        TempData["Status"] = "success";
+                        TempData["Message"] = "Stok güncellendi.";
+                    }
                 // Kayıt hatalarını yakala
                 catch (DbUpdateException ex)
                 {
                     if (ex.InnerException is SqlException sqlException)
                     {
-                        // Ürün kodu değiştiyse ve yeni ürün kodu zaten farklı bir ürüne aitse hata göster
+                        // Duplicate Primary Key
                         if (sqlException.Number == 2627 || sqlException.Number == 2601)
                         {
-                            product.ProductCode = "";
-                            ModelState.AddModelError("ProductCode", "Yeni ürün koduna sahip bir ürün zaten mevcut!");
+                            ModelState.AddModelError("StockCode", "Yeni stok koduna sahip bir stok zaten mevcut!");
+                        }
+                        // Foreign key
+                        else if (sqlException.Number == 547)
+                        {
+                            ModelState.AddModelError("ProductCode", "Geçersiz ürün kodu! Lütfen geçerli bir ürün kodu giriniz.");
                         }
                     }
 
@@ -162,8 +195,9 @@ namespace Inventory.Controllers
                 }
             }
 
-            return View(product);
+            return View(stock);
         }
+
     }
 
 }

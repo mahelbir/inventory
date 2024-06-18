@@ -4,7 +4,12 @@
 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 <div class="form-group mb-3">
     <label asp-for="ProductCode" class="control-label">Ürün Kodu</label>
-    <input asp-for="ProductCode" class="form-control" />
+    <div class="input-group">
+        <input asp-for="ProductCode" class="form-control" />
+        <div class="input-group-append">
+            <button class="btn btn-outline-secondary" data-uuid="#ProductCode" type="button" title="Üret"><i class="fas fa-redo"></i></button>
+        </div>
+    </div>
     <span asp-validation-for="ProductCode" class="text-danger"></span>
 </div>
 <div class="form-group mb-3">
