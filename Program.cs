@@ -1,10 +1,13 @@
 using Inventory.Models;
+using Inventory.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<StockService>();
 
 // Configure the connection string
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -20,14 +23,14 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
 }
 
+// Custom HTTP Error Page
+app.UseStatusCodePagesWithReExecute("/Home/Error", "?code={0}");
+
 app.UseStaticFiles();
 
 app.UseRouting();
 
 app.UseAuthorization();
-
-// Custom HTTP Error Page
-app.UseStatusCodePagesWithReExecute("/Home/Error", "?code={0}");
 
 app.MapControllerRoute(
     name: "default",

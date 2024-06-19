@@ -1,11 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Inventory.Models
 {
     public class Product
     {
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ProductID { get; set; }
 
+        [Key]
         [Required(ErrorMessage = "Ürün Kodu gereklidir.")]
         [StringLength(50, ErrorMessage = "Ürün Kodu en fazla 50 karakter olabilir.")]
         public string ProductCode { get; set; }
@@ -20,5 +23,7 @@ namespace Inventory.Models
 
         [StringLength(255, ErrorMessage = "Açıklama en fazla 255 karakter olabilir.")]
         public string? Description { get; set; }
+
+        public virtual ICollection<Stock>? Stocks { get; set; }
     }
 }

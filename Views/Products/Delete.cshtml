@@ -1,0 +1,20 @@
+﻿@model Inventory.Models.Product
+
+@{
+    ViewData["Title"] = "Ürün Sil";
+}
+
+<div class="card">
+    <div class="card-body">
+        <p>"@Model.Name" adlı ürünü silmek istediğinize emin misiniz?</p>
+        <p>Bu ürün toplamda <b>@ViewBag.Stocks stok</b> içeriyor.</p>
+        <form asp-action="DeleteConfirmed" asp-route-id="@Model.ProductID" autocomplete="off">
+            <input type="submit" value="Evet Sil" class="btn btn-danger" />
+            <a asp-action="Index" class="btn btn-secondary">İptal</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

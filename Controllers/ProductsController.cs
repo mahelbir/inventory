@@ -3,29 +3,26 @@ using Microsoft.EntityFrameworkCore;
 using Inventory.Models;
 using Microsoft.Data.SqlClient;
 using Inventory.Utils;
+using Inventory.Services;
 
 namespace Inventory.Controllers
 {
     public class ProductsController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ProductService _productService;
 
-        public ProductsController(ApplicationDbContext context)
+        public ProductsController(ProductService productService)
         {
-            _context = context;
+            _productService = productService;
         }
 
         // Listeleme
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Products
-                // son eklenene göre sırala
-                .OrderByDescending(m => m.ProductID)
-                .ToListAsync()
-             );
+            return View(await _productService.GetAll());
         }
 
-        // Silme
+        // Silme formu
         public async Task<IActionResult> Delete(int id)
         {
             if (!Helper.IsValidID(id))
@@ -33,15 +30,31 @@ namespace Inventory.Controllers
                 return BadRequest();
             }
 
-            // Kayıt varsa sil
-            var product = await _context.Products.FindAsync(id);
-            if (product != null)
+            // Kayıt mevcut değilse hata göster
+            var product = await _productService.GetByID(id);
+            if (product == null)
             {
-                _context.Products.Remove(product);
-                await _context.SaveChangesAsync();
+                return NotFound();
             }
 
-            // Listeye yönlendir
+            // Toplam stok miktarını hesapla
+            ViewBag.Stocks = await _productService.GetTotalStockQuantity(product.ProductCode);
+
+            return View(product);
+        }
+
+        // Silme işlemi
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            if (!Helper.IsValidID(id))
+            {
+                return BadRequest();
+            }
+
+            await _productService.Delete(id);
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -54,15 +67,13 @@ namespace Inventory.Controllers
         // Oluşturma işlemi
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ProductID,ProductCode,Name,Description,Price")] Product product)
+        public async Task<IActionResult> Create([Bind("ProductCode,Name,Price,Description")] Product product)
         {
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Add(product);
-                    await _context.SaveChangesAsync();
-
+                    await _productService.Add(product);
                     // Kayıt başarılıysa listeye yönlendir
                     return RedirectToAction(nameof(Index));
                 }
@@ -106,7 +117,7 @@ namespace Inventory.Controllers
             }
 
             // Kayıt mevcut değilse hata göster
-            var product = await _context.Products.FindAsync(id);
+            var product = await _productService.GetByID(id);
             if (product == null)
             {
                 return NotFound();
@@ -118,7 +129,7 @@ namespace Inventory.Controllers
         // Düzenleme işlemi
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ProductID,ProductCode,Name,Description,Price")] Product product)
+        public async Task<IActionResult> Edit(int id, [Bind("ProductID,ProductCode,Name,Price,Description")] Product product)
         {
             // GET ve POST ID eşleşmeli
             if (id != product.ProductID)
@@ -130,31 +141,16 @@ namespace Inventory.Controllers
             {
                 try
                 {
-                    _context.Update(product);
-                    await _context.SaveChangesAsync();
+                    await _productService.Update(product);
 
                     // Kayıt başarılıysa flash mesajı göster
                     TempData["Status"] = "success";
                     TempData["Message"] = "Ürün güncellendi.";
                 }
                 // Kayıt hatalarını yakala
-                catch (DbUpdateException ex)
+                catch (DbUpdateException)
                 {
-                    if (ex.InnerException is SqlException sqlException)
-                    {
-                        // Ürün kodu değiştiyse ve yeni ürün kodu zaten farklı bir ürüne aitse hata göster
-                        if (sqlException.Number == 2627 || sqlException.Number == 2601)
-                        {
-                            product.ProductCode = "";
-                            ModelState.AddModelError("ProductCode", "Yeni ürün koduna sahip bir ürün zaten mevcut!");
-                        }
-                    }
-
-                    // Bilinmeyen kayıt hatası ise varsayılan mesaj
-                    if (ModelState.ErrorCount == 0)
-                    {
-                        ModelState.AddModelError("", "Güncelleme esnasında bir hata oluştu!");
-                    }
+                    ModelState.AddModelError("", "Kayıt esnasında bir hata oluştu!");
                 }
                 // Diğer hatalar
                 catch (Exception)
@@ -165,6 +161,7 @@ namespace Inventory.Controllers
 
             return View(product);
         }
+
     }
 
 }

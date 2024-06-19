@@ -3,16 +3,17 @@ using Microsoft.EntityFrameworkCore;
 using Inventory.Models;
 using Microsoft.Data.SqlClient;
 using Inventory.Utils;
+using Inventory.Services;
 
 namespace Inventory.Controllers
 {
     public class StocksController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly StockService _stockService;
 
-        public StocksController(ApplicationDbContext context)
+        public StocksController(StockService stockService)
         {
-            _context = context;
+            _stockService = stockService;
         }
 
         // Ürüne göre listeleme
@@ -23,14 +24,9 @@ namespace Inventory.Controllers
                 return BadRequest();
             }
 
-            var stocks = await _context.Stocks
-                // ilgili ürün
-                .Where(s => s.ProductCode == productCode)
-                // son güncellemeye göre listele
-                .OrderByDescending(m => m.UpdatedAt)
-                .ToListAsync();
-
+            var stocks = await _stockService.GetAllByProductCode(productCode);
             ViewBag.ProductCode = productCode;
+            // İlgili ürünün toplam stok miktarı
             ViewBag.Total = stocks.Sum(s => s.Quantity);
 
             return View(stocks);
@@ -45,17 +41,11 @@ namespace Inventory.Controllers
             }
 
             // Kayıt varsa sil
-            var stock = await _context.Stocks.FindAsync(id);
-            string productCode = "";
-            if (stock != null)
-            {
-                productCode = stock.ProductCode;
-                _context.Stocks.Remove(stock);
-                await _context.SaveChangesAsync();
-            }
+            var stock = await _stockService.Delete(id);
+            var productCode = stock != null ? stock.ProductCode : null;
 
-            // Listeye yönlendir
-            return RedirectToAction("Index", new { productCode = productCode });
+            // Ürünün stok listesine yönlendir
+            return RedirectToAction("Index", new { productCode });
         }
 
         // Oluşturma formu
@@ -80,10 +70,7 @@ namespace Inventory.Controllers
             {
                 try
                 {
-                    stock.CreatedAt = DateTime.Now;
-                    stock.UpdatedAt = DateTime.Now;
-                    _context.Add(stock);
-                    await _context.SaveChangesAsync();
+                    await _stockService.Add(stock);
 
                     // Kayıt başarılıysa listeye yönlendir
                     return RedirectToAction("Index", new { productCode = stock.ProductCode });
@@ -134,7 +121,7 @@ namespace Inventory.Controllers
             }
 
             // Kayıt mevcut değilse hata göster
-            var stock = await _context.Stocks.FindAsync(id);
+            var stock = await _stockService.GetByID(id);
             if (stock == null)
             {
                 return NotFound();
@@ -146,7 +133,7 @@ namespace Inventory.Controllers
         // Düzenleme işlemi
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("StockID,StockCode,ProductCode,Quantity,CreatedAt")] Stock stock)
+        public async Task<IActionResult> Edit(int id, [Bind("StockID,StockCode,ProductCode,Quantity")] Stock stock)
         {
             // GET ve POST ID eşleşmeli
             if (id != stock.StockID)
@@ -156,30 +143,22 @@ namespace Inventory.Controllers
 
             if (ModelState.IsValid)
             {
-                    try
-                    {
+                try
+                {
 
-                        stock.UpdatedAt = DateTime.Now;
-                        _context.Update(stock);
-                        await _context.SaveChangesAsync();
+                    await _stockService.Update(stock);
 
-                        // Kayıt başarılıysa flash mesajı göster
-                        TempData["Status"] = "success";
-                        TempData["Message"] = "Stok güncellendi.";
-                    }
+                    // Kayıt başarılıysa flash mesajı göster
+                    TempData["Status"] = "success";
+                    TempData["Message"] = "Stok güncellendi.";
+                }
                 // Kayıt hatalarını yakala
                 catch (DbUpdateException ex)
                 {
                     if (ex.InnerException is SqlException sqlException)
                     {
-                        // Duplicate Primary Key
-                        if (sqlException.Number == 2627 || sqlException.Number == 2601)
-                        {
-                            stock.StockCode = "";
-                            ModelState.AddModelError("StockCode", "Yeni stok koduna sahip bir stok zaten mevcut!");
-                        }
                         // Foreign key
-                        else if (sqlException.Number == 547)
+                        if (sqlException.Number == 547)
                         {
                             stock.ProductCode = "";
                             ModelState.AddModelError("ProductCode", "Geçersiz ürün kodu! Lütfen geçerli bir ürün kodu giriniz.");
@@ -189,7 +168,7 @@ namespace Inventory.Controllers
                     // Bilinmeyen kayıt hatası ise varsayılan mesaj
                     if (ModelState.ErrorCount == 0)
                     {
-                        ModelState.AddModelError("", "Güncelleme esnasında bir hata oluştu!");
+                        ModelState.AddModelError("", "Kayıt esnasında bir hata oluştu!");
                     }
                 }
                 // Diğer hatalar

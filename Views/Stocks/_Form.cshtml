@@ -7,16 +7,27 @@
     <input asp-for="ProductCode" class="form-control" readonly />
     <span asp-validation-for="ProductCode" class="text-danger"></span>
 </div>
-<div class="form-group mb-3">
-    <label asp-for="StockCode" class="control-label">Stok Kodu</label>
-    <div class="input-group">
-        <input asp-for="StockCode" class="form-control" />
-        <div class="input-group-append">
-            <button class="btn btn-outline-secondary" data-uuid="#StockCode" type="button" title="Üret"><i class="fas fa-redo"></i></button>
+@if (Model == null || Model.StockID == 0)
+{
+    <div class="form-group mb-3">
+        <label asp-for="StockCode" class="control-label">Stok Kodu</label>
+        <div class="input-group">
+            <input asp-for="StockCode" class="form-control" />
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary" data-uuid="#StockCode" type="button" title="Üret"><i class="fas fa-redo"></i></button>
+            </div>
         </div>
+        <span asp-validation-for="StockCode" class="text-danger"></span>
     </div>
-    <span asp-validation-for="StockCode" class="text-danger"></span>
-</div>
+}
+else
+{
+    <div class="form-group mb-3">
+        <label asp-for="StockCode" class="control-label">Stok Kodu</label>
+        <input asp-for="StockCode" class="form-control" readonly />
+        <span asp-validation-for="StockCode" class="text-danger"></span>
+    </div>
+}
 <div class="form-group mb-3">
     <label asp-for="Quantity" class="control-label">Miktar</label>
     <input asp-for="Quantity" class="form-control" type="number" />
