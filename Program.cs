@@ -1,7 +1,6 @@
-using Inventory.Models;
-using Inventory.ViewModels;
 using Inventory.Services;
 using Microsoft.EntityFrameworkCore;
+using Inventory.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 

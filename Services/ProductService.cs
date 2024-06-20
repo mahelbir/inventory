@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Inventory.Models;
+using Inventory.Data;
 
 namespace Inventory.Services
 {
@@ -90,14 +91,13 @@ namespace Inventory.Services
 
             var totalCount = await query.CountAsync();
             var products = await query
-                .OrderByDescending(m => m.ProductID)
+                .OrderByDescending(m => m.ProductID) // En son eklenme sırasına göre sırala
                 .Skip((pageIndex - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
 
             return (products, totalCount);
         }
-
 
     }
 }
