@@ -3,19 +3,18 @@ using Inventory.Models;
 
 namespace Inventory.Services
 {
-    public class ProductService(ApplicationDbContext context)
+    public class ProductService
     {
-        public async Task<List<Product>> GetAll()
+        private readonly ApplicationDbContext _context;
+
+        public ProductService(ApplicationDbContext context)
         {
-            return await context.Products
-                // son eklenene göre sırala
-                .OrderByDescending(m => m.ProductID)
-                .ToListAsync();
+            _context = context;
         }
 
         public async Task<Product?> GetByID(int id)
         {
-            return await context.Products.FirstOrDefaultAsync(p => p.ProductID == id);
+            return await _context.Products.FirstOrDefaultAsync(p => p.ProductID == id);
         }
 
         public async Task<Product?> Delete(int id)
@@ -23,8 +22,8 @@ namespace Inventory.Services
             var product = await GetByID(id);
             if (product != null)
             {
-                context.Products.Remove(product);
-                await context.SaveChangesAsync();
+                _context.Products.Remove(product);
+                await _context.SaveChangesAsync();
             }
 
             return product;
@@ -32,8 +31,8 @@ namespace Inventory.Services
 
         public async Task Add(Product product)
         {
-            context.Add(product);
-            await context.SaveChangesAsync();
+            _context.Add(product);
+            await _context.SaveChangesAsync();
         }
 
         public async Task Update(Product product)
@@ -43,33 +42,60 @@ namespace Inventory.Services
             {
                 return;
             }
-            
+
             // Güncellenebilir alanlar
             existingProduct.Name = product.Name;
             existingProduct.Price = product.Price;
             existingProduct.Description = product.Description;
 
-            context.Update(existingProduct);
+            _context.Update(existingProduct);
 
             // Güncellenemez alanlar
-            context.Entry(existingProduct).Property(p => p.ProductID).IsModified = false;
-            context.Entry(existingProduct).Property(p => p.ProductCode).IsModified = false;
+            _context.Entry(existingProduct).Property(p => p.ProductID).IsModified = false;
+            _context.Entry(existingProduct).Property(p => p.ProductCode).IsModified = false;
 
-            await context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<int> Count()
+        {
+            return await _context.Products.CountAsync();
         }
 
         public async Task<int> GetTotalStockQuantity(string productCode)
         {
-            var product = await context.Products
+            var product = await _context.Products
                 .Include(p => p.Stocks) // Stokları da dahil et
                 .FirstOrDefaultAsync(p => p.ProductCode == productCode);
 
-            if (product == null)
+            if (product == null || product.Stocks == null)
             {
                 return 0;
             }
 
-            return product.Stocks.Sum(s => (s != null ? s.Quantity : 0));
+            return product.Stocks.Sum(s => s.Quantity);
+        }
+
+        public async Task<(List<Product> Products, int TotalCount)> Search(string searchTerm, int pageIndex, int pageSize)
+        {
+            var query = _context.Products.AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                query = query.Where(p =>
+                    p.Name.Contains(searchTerm) || // Name LIKE %searchTerm%
+                    p.ProductCode == searchTerm // ProductCode = searchTerm
+                );
+            }
+
+            var totalCount = await query.CountAsync();
+            var products = await query
+                .OrderByDescending(m => m.ProductID)
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (products, totalCount);
         }
 
 

@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Inventory.Models;
 using Microsoft.Data.SqlClient;
+using Inventory.Models;
+using Inventory.ViewModels;
 using Inventory.Utils;
 using Inventory.Services;
 
@@ -17,9 +18,22 @@ namespace Inventory.Controllers
         }
 
         // Listeleme
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchTerm, int pageIndex = 1)
         {
-            return View(await _productService.GetAll());
+            var PageSize = 10; // Her sayfada kaç ürün görünecek
+            pageIndex = pageIndex < 1 ? 1 : pageIndex; // Sayfa numarası 1'den küçük olamaz
+            var (products, totalCount) = await _productService.Search(searchTerm, pageIndex, PageSize);
+            var totalPages = (int)Math.Ceiling((double)totalCount / PageSize);
+
+            var viewModel = new ProductListViewModel
+            {
+                Products = products,
+                PageIndex = pageIndex,
+                TotalPages = totalPages,
+                SearchTerm = searchTerm
+            };
+
+            return View(viewModel);
         }
 
         // Silme formu

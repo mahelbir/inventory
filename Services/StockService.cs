@@ -3,11 +3,17 @@ using Inventory.Models;
 
 namespace Inventory.Services
 {
-    public class StockService(ApplicationDbContext context)
+    public class StockService
     {
+        private readonly ApplicationDbContext _context;
+
+        public StockService(ApplicationDbContext context)
+        {
+            _context = context;
+        }
         public async Task<List<Stock>> GetAllByProductCode(string productCode)
         {
-            var stocks = await context.Stocks
+            var stocks = await _context.Stocks
                  // ilgili ürün
                  .Where(s => s.ProductCode == productCode)
                  // son güncellemeye göre listele
@@ -19,7 +25,7 @@ namespace Inventory.Services
 
         public async Task<Stock?> GetByID(int id)
         {
-            return await context.Stocks.FirstOrDefaultAsync(p => p.StockID == id);
+            return await _context.Stocks.FirstOrDefaultAsync(p => p.StockID == id);
         }
 
         public async Task<Stock?> Delete(int id)
@@ -27,8 +33,8 @@ namespace Inventory.Services
             var stock = await GetByID(id);
             if (stock != null)
             {
-                context.Stocks.Remove(stock);
-                await context.SaveChangesAsync();
+                _context.Stocks.Remove(stock);
+                await _context.SaveChangesAsync();
             }
 
             return stock;
@@ -38,8 +44,8 @@ namespace Inventory.Services
         {
             stock.CreatedAt = DateTime.Now;
             stock.UpdatedAt = DateTime.Now;
-            context.Add(stock);
-            await context.SaveChangesAsync();
+            _context.Add(stock);
+            await _context.SaveChangesAsync();
         }
 
         public async Task Update(Stock stock)
@@ -55,14 +61,14 @@ namespace Inventory.Services
             existingStock.CreatedAt = existingStock.CreatedAt;
             existingStock.UpdatedAt = DateTime.Now;
 
-            context.Update(existingStock);
+            _context.Update(existingStock);
 
             // Güncellenemez alanlar
-            context.Entry(existingStock).Property(s => s.StockID).IsModified = false;
-            context.Entry(existingStock).Property(s => s.StockCode).IsModified = false;
-            context.Entry(existingStock).Property(s => s.ProductCode).IsModified = false;
+            _context.Entry(existingStock).Property(s => s.StockID).IsModified = false;
+            _context.Entry(existingStock).Property(s => s.StockCode).IsModified = false;
+            _context.Entry(existingStock).Property(s => s.ProductCode).IsModified = false;
 
-            await context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
         }
 
     }
