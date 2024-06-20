@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Inventory.Models;
+using Inventory.ViewModels;
 using Microsoft.Data.SqlClient;
 using Inventory.Utils;
 using Inventory.Services;
@@ -25,11 +26,9 @@ namespace Inventory.Controllers
             }
 
             var stocks = await _stockService.GetAllByProductCode(productCode);
-            ViewBag.ProductCode = productCode;
-            // İlgili ürünün toplam stok miktarı
-            ViewBag.Total = stocks.Sum(s => s.Quantity);
+            var totalStockQuantity = stocks.Sum(s => s.Quantity); // İlgili ürünün toplam stok miktarı
 
-            return View(stocks);
+            return View(new StockListViewModel { ProductCode = productCode, TotalStockQuantity = totalStockQuantity, Stocks = stocks });
         }
 
         // Silme
