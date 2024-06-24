@@ -49,16 +49,16 @@
         <div class="card-footer">
             <nav>
                 <ul class="pagination">
-                    <li class="page-item @(Model.PageIndex > 1 ? "" : "disabled")">
+                    <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
                         <a class="page-link" asp-action="Index" asp-route-searchTerm="@Model.SearchTerm" asp-route-pageIndex="1">&#10218;</a>
                     </li>
-                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    @for (int i = Model.StartPage; i <= Model.EndPage; i++)
                     {
                         <li class="page-item @(i == Model.PageIndex ? "active" : "")">
                             <a class="page-link" asp-action="Index" asp-route-searchTerm="@Model.SearchTerm" asp-route-pageIndex="@i">@i</a>
                         </li>
                     }
-                    <li class="page-item @(Model.PageIndex < Model.TotalPages ? "" : "disabled")">
+                    <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
                         <a class="page-link" asp-action="Index" asp-route-searchTerm="@Model.SearchTerm" asp-route-pageIndex="@(Model.TotalPages)">&#10219;</a>
                     </li>
                 </ul>

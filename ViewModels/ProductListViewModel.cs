@@ -2,13 +2,11 @@
 
 namespace Inventory.ViewModels
 {
-    public class ProductListViewModel
+    public class ProductListViewModel : PageableListViewModel
     {
         public IEnumerable<Product> Products { get; set; }
-        public int PageIndex { get; set; }
-        public int TotalPages { get; set; }
+
         public string SearchTerm { get; set; }
-        public bool HasPreviousPage => PageIndex > 1;
-        public bool HasNextPage => PageIndex < TotalPages;
+
     }
 }

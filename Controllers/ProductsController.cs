@@ -20,19 +20,14 @@ namespace Inventory.Controllers
         // Listeleme
         public async Task<IActionResult> Index(string searchTerm, int pageIndex = 1)
         {
-            var PageSize = 10; // Her sayfada kaç ürün görünecek
-            pageIndex = pageIndex < 1 ? 1 : pageIndex; // Sayfa numarası 1'den küçük olamaz
-            var (products, totalCount) = await _productService.Search(searchTerm, pageIndex, PageSize);
-            var totalPages = (int)Math.Ceiling((double)totalCount / PageSize);
-
             var viewModel = new ProductListViewModel
             {
-                Products = products,
                 PageIndex = pageIndex,
-                TotalPages = totalPages,
                 SearchTerm = searchTerm
             };
-
+            var (products, totalRows) = await _productService.Search(searchTerm, viewModel.PageIndex, viewModel.PageSize);
+            viewModel.Products = products;
+            viewModel.TotalRows = totalRows;
             return View(viewModel);
         }
 
