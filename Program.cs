@@ -3,8 +3,6 @@ using Inventory.Models;
 using Inventory.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
-using Inventory.Helpers;
-using System.Security.Policy;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -34,7 +34,7 @@ namespace Inventory.Controllers
             {
                 var user = new ApplicationUser
                 {
-                    UserName = model.Username,
+                    UserName = model.UserName,
                     Email = model.Email,
                     FirstName = model.FirstName,
                     LastName = model.LastName
@@ -72,12 +72,12 @@ namespace Inventory.Controllers
             if (ModelState.IsValid)
             {
 
-                var user = await _userManager.FindByNameAsync(model.Username);
+                var user = await _userManager.FindByNameAsync(model.UserName);
                 if (user != null)
                 {
                     if (await _userManager.IsInRoleAsync(user, nameof(Roles.User)))
                     {
-                        var result = await _signInManager.PasswordSignInAsync(model.Username, model.Password, model.RememberMe, lockoutOnFailure: true);
+                        var result = await _signInManager.PasswordSignInAsync(model.UserName, model.Password, model.RememberMe, lockoutOnFailure: true);
                         if (result.Succeeded)
                         {
                             returnUrl = (returnUrl != null && Url.IsLocalUrl(returnUrl)) ? returnUrl : Url.Content("~/");
