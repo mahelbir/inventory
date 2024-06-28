@@ -4,6 +4,7 @@ namespace Inventory.ViewModels
     {
 
         public string? Message { get; set; }
+
     }
 
 }

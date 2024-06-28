@@ -13,14 +13,14 @@ namespace Inventory.Services
             _context = context;
         }
 
-        public async Task<Product?> GetByID(int id)
+        public async Task<Product?> Get(int id)
         {
             return await _context.Products.FirstOrDefaultAsync(p => p.ProductID == id);
         }
 
         public async Task<Product?> Delete(int id)
         {
-            var product = await GetByID(id);
+            var product = await Get(id);
             if (product != null)
             {
                 _context.Products.Remove(product);
@@ -38,7 +38,7 @@ namespace Inventory.Services
 
         public async Task Update(Product product)
         {
-            var existingProduct = await GetByID(product.ProductID);
+            var existingProduct = await Get(product.ProductID);
             if (existingProduct == null)
             {
                 return;
@@ -62,19 +62,24 @@ namespace Inventory.Services
         {
             return await _context.Products.CountAsync();
         }
-
-        public async Task<int> GetTotalStockQuantity(string productCode)
+        
+        public async Task<Product?> GetWithStocks(int id)
         {
-            var product = await _context.Products
+            return await _context.Products
+                .Include(p => p.Stocks) // Stokları da dahil et
+                .FirstOrDefaultAsync(p => p.ProductID == id);
+        }
+
+        public async Task<Product?> GetByProductCode(string productCode)
+        {
+            return await _context.Products.FirstOrDefaultAsync(p => p.ProductCode == productCode);
+        }
+
+        public async Task<Product?> GetByProductCodeWithStocks(string productCode)
+        {
+            return await _context.Products
                 .Include(p => p.Stocks) // Stokları da dahil et
                 .FirstOrDefaultAsync(p => p.ProductCode == productCode);
-
-            if (product == null || product.Stocks == null)
-            {
-                return 0;
-            }
-
-            return product.Stocks.Sum(s => s.Quantity);
         }
 
         public async Task<(List<Product> Products, int TotalCount)> Search(string searchTerm, int pageIndex, int pageSize)

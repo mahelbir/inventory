@@ -1,5 +1,13 @@
-﻿@{
+﻿@model Inventory.ViewModels.IndexViewModel
+
+@{
     ViewData["Title"] = "EnvanterPlus";
 }
 
 <h1>EnvanterPlus ürün ve stok yönetim sistemi</h1>
+
+@if (Model.User != null)
+{
+    <hr />
+    <h3 class="text-success">Merhaba! @Model.User.FullName</h3>
+}

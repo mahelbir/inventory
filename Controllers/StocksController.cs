@@ -1,40 +1,46 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Inventory.Models;
-using Inventory.ViewModels;
 using Microsoft.Data.SqlClient;
-using Inventory.Utils;
+using Inventory.Helpers;
 using Inventory.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Inventory.Controllers
 {
+    [Authorize(Roles = nameof(Roles.User))]
     public class StocksController : Controller
     {
         private readonly StockService _stockService;
+        private readonly ProductService _productService;
 
-        public StocksController(StockService stockService)
+        public StocksController(StockService stockService, ProductService productService)
         {
             _stockService = stockService;
+            _productService = productService;
         }
 
         // Ürüne göre listeleme
         public async Task<IActionResult> Index(string productCode)
         {
-            if (!Helper.IsValidCode(productCode))
+            if (!Common.IsValidCode(productCode))
             {
                 return BadRequest();
             }
 
-            var stocks = await _stockService.GetAllByProductCode(productCode);
-            var totalStockQuantity = stocks.Sum(s => s.Quantity); // İlgili ürünün toplam stok miktarı
+            var product = await _productService.GetByProductCodeWithStocks(productCode);
+            if (product == null)
+            {
+                return NotFound();
+            }
 
-            return View(new StockListViewModel { ProductCode = productCode, TotalStockQuantity = totalStockQuantity, Stocks = stocks });
+            return View(product);
         }
 
         // Silme
         public async Task<IActionResult> Delete(int id)
         {
-            if (!Helper.IsValidID(id))
+            if (!Common.IsValidID(id))
             {
                 return BadRequest();
             }
@@ -50,7 +56,7 @@ namespace Inventory.Controllers
         // Oluşturma formu
         public IActionResult Create(string productCode)
         {
-            if (!Helper.IsValidCode(productCode))
+            if (!Common.IsValidCode(productCode))
             {
                 return BadRequest();
             }
@@ -114,13 +120,13 @@ namespace Inventory.Controllers
         // Düzenleme formu
         public async Task<IActionResult> Edit(int id)
         {
-            if (!Helper.IsValidID(id))
+            if (!Common.IsValidID(id))
             {
                 return BadRequest();
             }
 
             // Kayıt mevcut değilse hata göster
-            var stock = await _stockService.GetByID(id);
+            var stock = await _stockService.Get(id);
             if (stock == null)
             {
                 return NotFound();

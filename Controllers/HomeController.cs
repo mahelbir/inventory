@@ -1,22 +1,36 @@
+using Inventory.Models;
 using Inventory.ViewModels;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Inventory.Controllers
 {
     public class HomeController : Controller
     {
+        private readonly UserManager<ApplicationUser> _userManager;
+
+        public HomeController(UserManager<ApplicationUser> userManager)
+        {
+            _userManager = userManager;
+        }
 
         // Anasayfa
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var viewModel = new IndexViewModel();
+            if (User?.Identity?.IsAuthenticated == true)
+            {
+                viewModel.User = await _userManager.GetUserAsync(User);
+            }
+
+            return View(viewModel);
         }
 
         // HTTP hata sayfalarý
-        public IActionResult Error(int code = 0)
+        public IActionResult Error(int id = 0)
         {
             string message;
-            switch (code)
+            switch (id)
             {
                 case 400:
                     message = "Geçersiz istek!";
@@ -48,5 +62,6 @@ namespace Inventory.Controllers
             }
             return View("Error", new ErrorViewModel { Message = message }); ;
         }
+
     }
 }

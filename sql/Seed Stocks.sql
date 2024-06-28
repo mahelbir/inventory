@@ -1,7 +1,7 @@
 DECLARE @ProductIds TABLE (ProductID INT)
 
 INSERT INTO @ProductIds (ProductID)
-SELECT TOP 10 ProductID
+SELECT TOP 90 ProductID
 FROM Products
 ORDER BY ProductID DESC
 

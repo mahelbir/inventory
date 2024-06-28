@@ -25,5 +25,14 @@ namespace Inventory.Models
         public string? Description { get; set; }
 
         public virtual ICollection<Stock>? Stocks { get; set; }
+
+        [NotMapped]
+        public int TotalStockQuantity
+        {
+            get
+            {
+                return Stocks?.Sum(s => s.Quantity) ?? 0;
+            }
+        }
     }
 }

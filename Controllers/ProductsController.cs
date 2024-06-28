@@ -3,11 +3,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.SqlClient;
 using Inventory.Models;
 using Inventory.ViewModels;
-using Inventory.Utils;
+using Inventory.Helpers;
 using Inventory.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Inventory.Controllers
 {
+    [Authorize(Roles = nameof(Roles.User))]
     public class ProductsController : Controller
     {
         private readonly ProductService _productService;
@@ -34,20 +36,17 @@ namespace Inventory.Controllers
         // Silme formu
         public async Task<IActionResult> Delete(int id)
         {
-            if (!Helper.IsValidID(id))
+            if (!Common.IsValidID(id))
             {
                 return BadRequest();
             }
 
             // Kayıt mevcut değilse hata göster
-            var product = await _productService.GetByID(id);
+            var product = await _productService.GetWithStocks(id);
             if (product == null)
             {
                 return NotFound();
             }
-
-            // Toplam stok miktarını hesapla
-            ViewBag.Stocks = await _productService.GetTotalStockQuantity(product.ProductCode);
 
             return View(product);
         }
@@ -57,7 +56,7 @@ namespace Inventory.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (!Helper.IsValidID(id))
+            if (!Common.IsValidID(id))
             {
                 return BadRequest();
             }
@@ -120,13 +119,13 @@ namespace Inventory.Controllers
         // Düzenleme formu
         public async Task<IActionResult> Edit(int id)
         {
-            if (!Helper.IsValidID(id))
+            if (!Common.IsValidID(id))
             {
                 return BadRequest();
             }
 
             // Kayıt mevcut değilse hata göster
-            var product = await _productService.GetByID(id);
+            var product = await _productService.Get(id);
             if (product == null)
             {
                 return NotFound();

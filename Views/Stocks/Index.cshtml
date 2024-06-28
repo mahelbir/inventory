@@ -1,11 +1,11 @@
-﻿@model Inventory.ViewModels.StockListViewModel
+﻿@model Inventory.Models.Product
 
 @{
     ViewData["Title"] = "Stok Listesi";
 }
 
-<h4>Ürün #@Model.ProductCode</h4>
-<h3 class="text-success">Toplam Stok: @Model.TotalStockQuantity</h3>
+<h4>@Model.Name</h4>
+<h3>Toplam Stok: <span class="badge bg-success">@Model.TotalStockQuantity</span></h3>
 
 <div class="card">
     <div class="card-header d-flex justify-content-end">
@@ -32,26 +32,29 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in Model.Stocks)
+                    @if (Model?.Stocks?.Any() == true)
                     {
-                        <tr>
-                            <td>
-                                @Html.DisplayFor(modelItem => item.StockCode)
-                            </td>
-                            <td>
-                                @Html.DisplayFor(modelItem => item.Quantity)
-                            </td>
-                            <td>
-                                @Html.DisplayFor(modelItem => item.UpdatedAt)
-                            </td>
-                            <td>
-                                @Html.DisplayFor(modelItem => item.CreatedAt)
-                            </td>
-                            <td>
-                                <a asp-action="Edit" asp-route-id="@item.StockID" class="btn btn-sm btn-warning"><i class="fas fa-pencil"></i></a>
-                                <a class="btn btn-sm btn-danger" onclick="confirmRedirect('@Url.Action("Delete", "Stocks", new { id = item.StockID })');"><i class="fas fa-trash"></i></a>
-                            </td>
-                        </tr>
+                        @foreach (var item in Model.Stocks)
+                        {
+                            <tr>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.StockCode)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Quantity)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.UpdatedAt)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.CreatedAt)
+                                </td>
+                                <td>
+                                    <a asp-action="Edit" asp-route-id="@item.StockID" class="btn btn-sm btn-warning"><i class="fas fa-pencil"></i></a>
+                                    <a class="btn btn-sm btn-danger" onclick="confirmRedirect('@Url.Action("Delete", "Stocks", new { id = item.StockID })');"><i class="fas fa-trash"></i></a>
+                                </td>
+                            </tr>
+                        }
                     }
                 </tbody>
             </table>
