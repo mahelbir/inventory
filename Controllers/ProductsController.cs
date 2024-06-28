@@ -93,7 +93,7 @@ namespace Inventory.Controllers
                         // Duplicate Primary Key
                         if (sqlException.Number == 2627 || sqlException.Number == 2601)
                         {
-                            product.ProductCode = "";
+                            product.ProductCode = string.Empty;
                             ModelState.AddModelError("ProductCode", "Aynı ürün koduna sahip bir ürün zaten mevcut!");
                         }
                     }
@@ -101,7 +101,7 @@ namespace Inventory.Controllers
                     // Bilinmeyen kayıt hatası ise varsayılan mesaj
                     if (ModelState.ErrorCount == 0)
                     {
-                        ModelState.AddModelError("", "Kayıt esnasında bir hata oluştu!");
+                        ModelState.AddModelError(string.Empty, "Kayıt esnasında bir hata oluştu!");
                     }
                 }
                 // Diğer hatalar
@@ -158,7 +158,7 @@ namespace Inventory.Controllers
                 // Kayıt hatalarını yakala
                 catch (DbUpdateException)
                 {
-                    ModelState.AddModelError("", "Kayıt esnasında bir hata oluştu!");
+                    ModelState.AddModelError(string.Empty, "Kayıt esnasında bir hata oluştu!");
                 }
                 // Diğer hatalar
                 catch (Exception)

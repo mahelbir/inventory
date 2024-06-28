@@ -1,4 +1,4 @@
-﻿@model Inventory.ViewModels.IndexViewModel
+﻿@model Inventory.ViewModels.UserViewModel
 
 @{
     ViewData["Title"] = "EnvanterPlus";
@@ -9,5 +9,5 @@
 @if (Model.User != null)
 {
     <hr />
-    <h3 class="text-success">Merhaba! @Model.User.FullName</h3>
+    <h3 class="text-success">Merhaba! <strong>@Model.User.FullName</strong></h3>
 }

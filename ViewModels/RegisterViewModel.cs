@@ -13,11 +13,11 @@ namespace Inventory.ViewModels
         public string Email { get; set; }
 
         [Required(ErrorMessage = "İsim gereklidir.")]
-        [StringLength(50, ErrorMessage = "İsim en fazla 50 karakter olabilir.")]
+        [StringLength(255, ErrorMessage = "İsim en fazla 255 karakter olabilir.")]
         public string FirstName { get; set; }
 
         [Required(ErrorMessage = "Soyisim gereklidir.")]
-        [StringLength(50, ErrorMessage = "Soyisim en fazla 50 karakter olabilir.")]
+        [StringLength(255, ErrorMessage = "Soyisim en fazla 255 karakter olabilir.")]
         public string LastName { get; set; }
 
         [Required(ErrorMessage = "Parola gereklidir.")]
@@ -26,6 +26,7 @@ namespace Inventory.ViewModels
         public string Password { get; set; }
 
         [DataType(DataType.Password)]
+        [Required(ErrorMessage = "Parola tekrarı gereklidir.")]
         [Compare("Password", ErrorMessage = "Parolalar eşleşmiyor.")]
         public string ConfirmPassword { get; set; }
 

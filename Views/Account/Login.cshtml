@@ -1,21 +1,38 @@
 ﻿@model Inventory.ViewModels.LoginViewModel
 
-<h2>Login</h2>
+@{
+    ViewData["Title"] = "Girş Yap";
+}
 
-<form asp-action="Login" method="post">
-    <div class="form-group">
-        <label asp-for="Username"></label>
-        <input asp-for="Username" class="form-control" />
-        <span asp-validation-for="Username" class="text-danger"></span>
+<div class="card">
+    <div class="card-body">
+        <form asp-action="Login" method="post" autocomplete="off">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" name="returnUrl" value="@Context.Request.Query["returnUrl"]" />
+            <div class="form-group  mb-3">
+                <label asp-for="Username">Kullanıcı Adı</label>
+                <input asp-for="Username" class="form-control" />
+                <span asp-validation-for="Username" class="text-danger"></span>
+            </div>
+            <div class="form-group mb-3">
+                <label asp-for="Password">Parola</label>
+                <input asp-for="Password" class="form-control" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check mb-3">
+                <input asp-for="RememberMe" class="form-check-input" checked />
+                <label asp-for="RememberMe" class="form-check-label">Beni Hatırla</label>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-sign-in-alt"></i> Giriş</button>
+        </form>
     </div>
-    <div class="form-group">
-        <label asp-for="Password"></label>
-        <input asp-for="Password" class="form-control" />
-        <span asp-validation-for="Password" class="text-danger"></span>
+    <div class="card-footer">
+        <a asp-action="Register" class="btn btn-sm btn-dark"><i class="fas fa-user-plus"></i> Kaydol</a>
     </div>
-    <div class="form-group form-check">
-        <input asp-for="RememberMe" class="form-check-input" />
-        <label asp-for="RememberMe" class="form-check-label"></label>
-    </div>
-    <button type="submit" class="btn btn-primary">Login</button>
-</form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

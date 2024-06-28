@@ -44,8 +44,7 @@ namespace Inventory.Controllers
                 var result = await _userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
-                    await _signInManager.SignInAsync(user, isPersistent: true);
-                    return RedirectToAction("Index", "Home");
+                    return Redirect(nameof(Login));
                 }
 
                 foreach (var error in result.Errors)
@@ -68,17 +67,37 @@ namespace Inventory.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [OnlyAnonymous]
-        public async Task<IActionResult> Login(LoginViewModel model)
+        public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl)
         {
             if (ModelState.IsValid)
             {
-                var result = await _signInManager.PasswordSignInAsync(model.Username, model.Password, model.RememberMe, lockoutOnFailure: false);
-                if (result.Succeeded)
+
+                var user = await _userManager.FindByNameAsync(model.Username);
+                if (user != null)
                 {
-                    return RedirectToAction("Index", "Home");
+                    if (await _userManager.IsInRoleAsync(user, nameof(Roles.User)))
+                    {
+                        var result = await _signInManager.PasswordSignInAsync(model.Username, model.Password, model.RememberMe, lockoutOnFailure: true);
+                        if (result.Succeeded)
+                        {
+                            returnUrl = (returnUrl != null && Url.IsLocalUrl(returnUrl)) ? returnUrl : Url.Content("~/");
+                            return Redirect(returnUrl);
+                        }
+                        else if (result.IsLockedOut)
+                        {
+                            ModelState.AddModelError(string.Empty, "Hesap kilitli. Lütfen daha sonra tekrar deneyiniz.");
+                        }
+                    }
+                    else
+                    {
+                        ModelState.AddModelError(string.Empty, "Bu hesap pasif durumdadır!");
+                    }
                 }
 
-                ModelState.AddModelError(string.Empty, "Geçersiz giriş denemesi.");
+                if (ModelState.ErrorCount == 0)
+                {
+                    ModelState.AddModelError(string.Empty, "Giriş bilgileri geçersiz!");
+                }
             }
 
             return View(model);

@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Inventory.Helpers;
 
 
 namespace Inventory.Attributes
@@ -11,7 +10,7 @@ namespace Inventory.Attributes
         {
             if (context.HttpContext.User?.Identity?.IsAuthenticated == true)
             {
-                context.Result = new RedirectResult(Common.BaseURL(context.HttpContext));
+                context.Result = new RedirectResult("/");
             }
             base.OnActionExecuting(context);
         }

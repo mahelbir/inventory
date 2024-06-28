@@ -17,7 +17,7 @@ namespace Inventory.Controllers
         // Anasayfa
         public async Task<IActionResult> Index()
         {
-            var viewModel = new IndexViewModel();
+            var viewModel = new UserViewModel();
             if (User?.Identity?.IsAuthenticated == true)
             {
                 viewModel.User = await _userManager.GetUserAsync(User);
