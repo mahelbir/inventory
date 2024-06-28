@@ -2,11 +2,21 @@
 
 namespace Inventory.ViewModels
 {
-    public class RegisterViewModel
+    public class AccountBaseViewModel
     {
         [Required(ErrorMessage = "Kullanıcı adı gereklidir.")]
         [StringLength(50, ErrorMessage = "Kullanıcı adı en fazla 50 karakter olabilir.")]
         public string Username { get; set; }
+
+        [Required(ErrorMessage = "Parola gereklidir.")]
+        [StringLength(100, ErrorMessage = "Parola en az {2} ve en fazla {1} karakter olmalıdır.", MinimumLength = 6)]
+        [DataType(DataType.Password)]
+        public string Password { get; set; }
+
+    }
+
+    public class AccountFullViewModel : AccountBaseViewModel
+    {
 
         [Required(ErrorMessage = "Email gereklidir.")]
         [EmailAddress(ErrorMessage = "Geçersiz email formatı.")]
@@ -20,10 +30,17 @@ namespace Inventory.ViewModels
         [StringLength(255, ErrorMessage = "Soyisim en fazla 255 karakter olabilir.")]
         public string LastName { get; set; }
 
-        [Required(ErrorMessage = "Parola gereklidir.")]
-        [StringLength(100, ErrorMessage = "Parola en az {2} ve en fazla {1} karakter olmalıdır.", MinimumLength = 6)]
-        [DataType(DataType.Password)]
-        public string Password { get; set; }
+    }
+
+
+    public class AccountLoginViewModel : AccountBaseViewModel
+    {
+        public bool RememberMe { get; set; }
+
+    }
+
+    public class AccountRegisterViewModel : AccountFullViewModel
+    {
 
         [DataType(DataType.Password)]
         [Required(ErrorMessage = "Parola tekrarı gereklidir.")]
@@ -31,4 +48,5 @@ namespace Inventory.ViewModels
         public string ConfirmPassword { get; set; }
 
     }
+
 }

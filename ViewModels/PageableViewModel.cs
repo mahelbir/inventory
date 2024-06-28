@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Inventory.ViewModels
+﻿namespace Inventory.ViewModels
 {
     public class PageableListViewModel
     {

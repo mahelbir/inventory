@@ -31,7 +31,11 @@ namespace Inventory.Models
         {
             get
             {
-                return Stocks?.Sum(s => s.Quantity) ?? 0;
+                if (Stocks == null)
+                {
+                    throw new InvalidDataException("Stok listesi eksik");
+                };
+                return Stocks.Sum(s => s.Quantity);
             }
         }
     }

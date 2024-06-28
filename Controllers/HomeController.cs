@@ -17,13 +17,13 @@ namespace Inventory.Controllers
         // Anasayfa
         public async Task<IActionResult> Index()
         {
-            var viewModel = new UserViewModel();
+            var user = new ApplicationUser();
             if (User?.Identity?.IsAuthenticated == true)
             {
-                viewModel.User = await _userManager.GetUserAsync(User);
+                user = await _userManager.GetUserAsync(User);
             }
 
-            return View(viewModel);
+            return View(user);
         }
 
         // HTTP hata sayfalarý

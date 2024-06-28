@@ -1,4 +1,4 @@
-﻿@model Inventory.ViewModels.UserViewModel
+﻿@model Inventory.Models.ApplicationUser
 
 @{
     ViewData["Title"] = "EnvanterPlus";
@@ -6,8 +6,8 @@
 
 <h1>EnvanterPlus ürün ve stok yönetim sistemi</h1>
 
-@if (Model.User != null)
+@if (Model.UserName != null)
 {
     <hr />
-    <h3 class="text-success">Merhaba! <strong>@Model.User.FullName</strong></h3>
+    <h3 class="text-success">Merhaba! <strong>@Model.FullName</strong></h3>
 }

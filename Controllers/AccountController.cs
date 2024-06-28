@@ -28,7 +28,7 @@ namespace Inventory.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [OnlyAnonymous]
-        public async Task<IActionResult> Register(RegisterViewModel model)
+        public async Task<IActionResult> Register(AccountRegisterViewModel model)
         {
             if (ModelState.IsValid)
             {
@@ -67,7 +67,7 @@ namespace Inventory.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [OnlyAnonymous]
-        public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl)
+        public async Task<IActionResult> Login(AccountLoginViewModel model, string? returnUrl)
         {
             if (ModelState.IsValid)
             {
