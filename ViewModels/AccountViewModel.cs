@@ -1,35 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Inventory.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace Inventory.ViewModels
 {
-    public class AccountBaseViewModel
+
+    public class AccountLoginViewModel
     {
         [Required(ErrorMessage = "Kullanıcı adı gereklidir.")]
-        [StringLength(50, ErrorMessage = "Kullanıcı adı en fazla 50 karakter olabilir.")]
         public string UserName { get; set; }
 
-    }
-
-    public class AccountFullViewModel : AccountBaseViewModel
-    {
-
-        [Required(ErrorMessage = "Email gereklidir.")]
-        [EmailAddress(ErrorMessage = "Geçersiz email formatı.")]
-        public string Email { get; set; }
-
-        [Required(ErrorMessage = "İsim gereklidir.")]
-        [StringLength(255, ErrorMessage = "İsim en fazla 255 karakter olabilir.")]
-        public string FirstName { get; set; }
-
-        [Required(ErrorMessage = "Soyisim gereklidir.")]
-        [StringLength(255, ErrorMessage = "Soyisim en fazla 255 karakter olabilir.")]
-        public string LastName { get; set; }
-
-    }
-
-
-    public class AccountLoginViewModel : AccountBaseViewModel
-    {
         [DataType(DataType.Password)]
         [Required(ErrorMessage = "Parola gereklidir.")]
         public string Password { get; set; }
@@ -38,7 +17,7 @@ namespace Inventory.ViewModels
 
     }
 
-    public class AccountRegisterViewModel : AccountFullViewModel
+    public class AccountRegisterViewModel : ApplicationUser
     {
         [DataType(DataType.Password)]
         [Required(ErrorMessage = "Parola gereklidir.")]

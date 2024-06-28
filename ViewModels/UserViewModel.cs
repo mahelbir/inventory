@@ -1,21 +1,22 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Inventory.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace Inventory.ViewModels
 {
-    public class UserViewModel : AccountFullViewModel
+    public class UserEditViewModel
     {
-        public string Id { get; set; }
 
-    }
+        public ApplicationUser UserDetails { get; set; }
 
-    public class UserEditViewModel : UserViewModel
-    {
         [DataType(DataType.Password)]
         [StringLength(100, ErrorMessage = "Parola en az {2} ve en fazla {1} karakter olmalıdır.", MinimumLength = 6)]
-        public string? Password { get; set; }
+        public string? UserPassword { get; set; }
 
-        public IList<string> Roles { get; set; }
+        public IList<string>? UserRoles { get; set; }
+
+        public IList<string>? AllRoles { get; set; }
 
     }
+
 
 }

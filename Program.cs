@@ -22,6 +22,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     options.Password.RequireLowercase = true;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
+.AddDefaultTokenProviders()
 .AddRoles<IdentityRole>();
 builder.Services.Configure<IdentityOptions>(options =>
 {

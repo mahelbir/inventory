@@ -1,41 +1,76 @@
 ﻿@model Inventory.ViewModels.UserEditViewModel
 
 @{
-    ViewData["Title"] = "Kullanıcı Düzenle";
+    ViewData["Title"] = "Kullanıcı #" + Model.UserDetails.NormalizedUserName;
+    var currentUser = User?.Identity?.Name;
 }
 
-<h1>Kullanıcı Düzenle</h1>
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-@TempData["Status"]">
+        @TempData["Message"]
+    </div>
+}
 
-<form asp-action="Edit">
-    <div class="form-group">
-        <label asp-for="UserName"></label>
-        <input asp-for="UserName" class="form-control" />
-        <span asp-validation-for="UserName" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label asp-for="FirstName"></label>
-        <input asp-for="FirstName" class="form-control" />
-        <span asp-validation-for="FirstName" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label asp-for="LastName"></label>
-        <input asp-for="LastName" class="form-control" />
-        <span asp-validation-for="LastName" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label asp-for="Email"></label>
-        <input asp-for="Email" class="form-control" />
-        <span asp-validation-for="Email" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label>Roller</label>
-        @foreach (var role in (List<string>)ViewData["Roles"])
-        {
-            <div class="form-check">
-                <input type="checkbox" class="form-check-input" name="Roles" value="@role" @(Model.Roles.Contains(role) ? "checked" : "") />
-                <label class="form-check-label">@role</label>
+<div class="card">
+    <div class="card-body">
+        <form asp-action="Edit" autocomplete="off">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <input type="hidden" asp-for="UserDetails.Id" />
+
+            <div class="form-group mb-3">
+                <label asp-for="UserDetails.UserName">Kullanıcı Adı</label>
+                <input asp-for="UserDetails.UserName" class="form-control" readonly />
+                <span asp-validation-for="UserDetails.UserName" class="text-danger"></span>
             </div>
-        }
+            <div class="form-group mb-3">
+                <label asp-for="UserDetails.Email">E-posta</label>
+                <input asp-for="UserDetails.Email" class="form-control" />
+                <span asp-validation-for="UserDetails.Email" class="text-danger"></span>
+            </div>
+            <div class="form-group mb-3">
+                <label asp-for="UserDetails.FirstName">İsim</label>
+                <input asp-for="UserDetails.FirstName" class="form-control" />
+                <span asp-validation-for="UserDetails.FirstName" class="text-danger"></span>
+            </div>
+            <div class="form-group mb-3">
+                <label asp-for="UserDetails.LastName">Soyisim</label>
+                <input asp-for="UserDetails.LastName" class="form-control" />
+                <span asp-validation-for="UserDetails.LastName" class="text-danger"></span>
+            </div>
+            <div class="form-group mb-3">
+                <label asp-for="UserPassword">Parola</label>
+                <input asp-for="UserPassword" class="form-control" />
+                <small>Güncellemek istemiyorsanız boş bırakın. </small>
+                <span asp-validation-for="UserPassword" class="text-danger"></span>
+            </div>
+            <div class="form-group mb-3">
+                <label>Roller</label>
+                @if (Model.AllRoles != null)
+                {
+                    @foreach (var role in Model.AllRoles)
+                    {
+
+                        <div class="form-check">
+                            @{
+                                var isChecked = (Model.UserRoles != null && Model.UserRoles.Contains(role)) ? "checked" : "";
+                                var isDisabled = (Model.UserDetails.UserName.Equals(currentUser)) ? "disabled" : "";
+                            }
+                            <input type="checkbox" class="form-check-input" name="UserRoles" value="@role" @isChecked @isDisabled  />
+                            <label class="form-check-label">@role</label>
+                        </div>
+                    }
+                }
+            </div>
+            <button type="submit" class="btn btn-primary">Kaydet</button>
+        </form>
+
     </div>
-    <button type="submit" class="btn btn-primary">Kaydet</button>
-</form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
