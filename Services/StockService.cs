@@ -23,8 +23,8 @@ namespace Inventory.Services
             var stocks = await _context.Stocks
                  // ilgili ürün
                  .Where(s => s.ProductCode == productCode)
-                 // son güncellemeye göre listele
-                 .OrderByDescending(m => m.UpdatedAt)
+                 // miktara göre artan sıralama
+                 .OrderBy(m => m.Quantity)
                  .ToListAsync();
 
             return stocks;

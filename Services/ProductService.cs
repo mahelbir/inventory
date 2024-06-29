@@ -32,9 +32,11 @@ namespace Inventory.Services
 
         public async Task<Product?> GetByProductCodeWithStocks(string productCode)
         {
-            return await _context.Products
-                .Include(p => p.Stocks) // Stokları da dahil et
+            var product = await _context.Products
+                .Include(p => p.Stocks.OrderBy(s => s.Quantity)) // Stokları miktarına göre dahil et
                 .FirstOrDefaultAsync(p => p.ProductCode == productCode);
+
+            return product;
         }
 
         public async Task<Product?> DeleteById(int id)
