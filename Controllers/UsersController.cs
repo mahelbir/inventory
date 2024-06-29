@@ -3,32 +3,45 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Inventory.Models;
 using Inventory.ViewModels;
-using Microsoft.EntityFrameworkCore;
+using Inventory.Services;
 
 [Authorize(Roles = "Admin")]
 public class UsersController : Controller
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly UserService _userService;
+    private readonly RoleService _roleService;
 
-    public UsersController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
+    public UsersController(UserService userService, RoleService roleService)
     {
-        _userManager = userManager;
-        _roleManager = roleManager;
+        _roleService = roleService;
+        _userService = userService;
     }
 
     // Listeleme işlemi
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
-        var users = _userManager.Users.ToList();
+        var users = await _userService.GetAll();
+        var userListViewModel = new List<UserListItemViewModel>();
 
-        return View(users);
+        foreach (var user in users)
+        {
+            userListViewModel.Add(new UserListItemViewModel
+            {
+                Id = user.Id,
+                UserName = user.UserName,
+                Email = user.Email,
+                FullName = user.FullName,
+                IsActive = await _userService.IsActive(user),
+            });
+        }
+
+        return View(userListViewModel);
     }
 
     // Silme işlemi
     public async Task<IActionResult> Delete(string id)
     {
-        var user = await _userManager.FindByIdAsync(id);
+        var user = await _userService.GetById(id);
 
         // Kayıt mevcut değilse hata göster
         if (user == null)
@@ -44,7 +57,7 @@ public class UsersController : Controller
 
         try
         {
-            await _userManager.DeleteAsync(user);
+            await _userService.Delete(user);
         }
         catch { }
 
@@ -54,7 +67,7 @@ public class UsersController : Controller
     // Düzenleme formu
     public async Task<IActionResult> Edit(string id)
     {
-        var user = await _userManager.FindByIdAsync(id);
+        var user = await _userService.GetById(id);
         if (user == null)
         {
             return NotFound();
@@ -63,8 +76,8 @@ public class UsersController : Controller
         var model = new UserEditViewModel
         {
             UserDetails = user,
-            UserRoles = await _userManager.GetRolesAsync(user), // Kullanıcının sahip olduğu roller
-            AllRoles = await GetAllRoles()  // Sistemdeki uygun roller
+            UserRoles = await _userService.GetRoles(user), // Kullanıcının sahip olduğu roller
+            AllRoles = await _roleService.GetAll()  // Sistemdeki uygun roller
         };
 
         return View(model);
@@ -77,7 +90,7 @@ public class UsersController : Controller
     {
         if (ModelState.IsValid)
         {
-            var user = await _userManager.FindByIdAsync(model.UserDetails.Id);
+            var user = await _userService.GetById(model.UserDetails.Id);
             if (user == null)
             {
                 return NotFound();
@@ -87,14 +100,14 @@ public class UsersController : Controller
             user.LastName = model.UserDetails.LastName;
             user.Email = model.UserDetails.Email;
 
-            model.AllRoles = await GetAllRoles();
+            model.AllRoles = await _roleService.GetAll();
 
             try
             {
                 IdentityResult result;
 
                 { // Kullanıcı bilgileri
-                    result = await _userManager.UpdateAsync(user);
+                    result = await _userService.Update(user);
                     if (!result.Succeeded)
                     {
                         ModelState.AddModelError(string.Empty, "Kullanıcı bilgileri güncellenemedi!");
@@ -103,8 +116,7 @@ public class UsersController : Controller
 
                 if (!string.IsNullOrEmpty(model.UserPassword)) // Parola
                 {
-                    var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-                    result = await _userManager.ResetPasswordAsync(user, token, model.UserPassword);
+                    result = await _userService.UpdatePassword(user, model.UserPassword);
                     if (!result.Succeeded)
                     {
                         ModelState.AddModelError(string.Empty, "Parola güncellenemedi!");
@@ -113,7 +125,7 @@ public class UsersController : Controller
 
                 { // Roller
 
-                    var userRoles = await _userManager.GetRolesAsync(user);
+                    var userRoles = await _userService.GetRoles(user);
                     var selectedRoles = model.UserRoles ?? [];
 
                     // Eğer admin yetkisi verilmiş ise tüm yetkiler verilmeli
@@ -128,13 +140,13 @@ public class UsersController : Controller
                         selectedRoles = model.AllRoles;
                     }
 
-                    result = await _userManager.AddToRolesAsync(user, selectedRoles.Except(userRoles).ToArray());
+                    result = await _userService.AddRoles(user, selectedRoles.Except(userRoles).ToArray());
                     if (!result.Succeeded)
                     {
                         ModelState.AddModelError(string.Empty, "Yeni roller eklenmemedi!");
                     }
 
-                    result = await _userManager.RemoveFromRolesAsync(user, userRoles.Except(selectedRoles).ToArray());
+                    result = await _userService.RemoveRoles(user, userRoles.Except(selectedRoles).ToArray());
                     if (!result.Succeeded)
                     {
                         ModelState.AddModelError(string.Empty, "Eski roller kaldırılamadı!");
@@ -145,8 +157,8 @@ public class UsersController : Controller
             {
                 return View("Error");
             }
-            
-                // Hiç hata yoksa flash mesajı göster
+
+            // Hiç hata yoksa flash mesajı göster
             if (ModelState.ErrorCount == 0)
             {
                 TempData["Status"] = "success";
@@ -157,9 +169,37 @@ public class UsersController : Controller
         return View(model);
     }
 
-    private async Task<IList<string>> GetAllRoles()
+    // Durum değiştirme işlemi
+    public async Task<IActionResult> ToggleStatus(string id)
     {
-        return await _roleManager.Roles.Select(r => r.Name ?? "").ToListAsync() ?? [];
+        var user = await _userService.GetById(id);
+
+        // Kayıt mevcut değilse hata göster
+        if (user == null)
+        {
+            return NotFound();
+        }
+
+        // Admin kendisine müdahele edemez
+        if (user.UserName.Equals(User?.Identity?.Name))
+        {
+            return BadRequest();
+        }
+
+        try
+        {
+            if (await _userService.IsActive(user))
+            {
+                await _userService.Deactivate(user);
+            }
+            else
+            {
+                await _userService.Activate(user);
+            }
+        }
+        catch { }
+
+        return RedirectToAction(nameof(Index));
     }
 
 }

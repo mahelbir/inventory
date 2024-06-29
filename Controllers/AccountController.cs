@@ -3,17 +3,18 @@ using Microsoft.AspNetCore.Mvc;
 using Inventory.Models;
 using Inventory.ViewModels;
 using Inventory.Attributes;
+using Inventory.Services;
 
 namespace Inventory.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly UserService _userService;
         private readonly SignInManager<ApplicationUser> _signInManager;
 
-        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
+        public AccountController(UserService userService, SignInManager<ApplicationUser> signInManager)
         {
-            _userManager = userManager;
+            _userService = userService;
             _signInManager = signInManager;
         }
 
@@ -41,7 +42,7 @@ namespace Inventory.Controllers
                 };
 
                 // Kullanıcıyı oluştur
-                var result = await _userManager.CreateAsync(user, model.Password);
+                var result = await _userService.Add(user, model.Password);
                 if (result.Succeeded)
                 {
                     return Redirect(nameof(Login));
@@ -72,10 +73,10 @@ namespace Inventory.Controllers
             if (ModelState.IsValid)
             {
 
-                var user = await _userManager.FindByNameAsync(model.UserName);
+                var user = await _userService.GetByUserName(model.UserName);
                 if (user != null)
                 {
-                    if (await _userManager.IsInRoleAsync(user, nameof(Roles.User)))
+                    if (await _userService.IsActive(user))
                     {
                         var result = await _signInManager.PasswordSignInAsync(model.UserName, model.Password, model.RememberMe, lockoutOnFailure: true);
                         if (result.Succeeded)

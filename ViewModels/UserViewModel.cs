@@ -3,6 +3,20 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Inventory.ViewModels
 {
+
+    public class UserListItemViewModel
+    {
+        public string Id { get; set; }
+
+        public string UserName { get; set; }
+
+        public string Email { get; set; }
+
+        public string FullName { get; set; }
+
+        public bool IsActive { get; set; }
+    }
+
     public class UserEditViewModel
     {
 
@@ -17,6 +31,5 @@ namespace Inventory.ViewModels
         public IList<string>? AllRoles { get; set; }
 
     }
-
 
 }

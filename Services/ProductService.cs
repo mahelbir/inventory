@@ -13,14 +13,33 @@ namespace Inventory.Services
             _context = context;
         }
 
-        public async Task<Product?> Get(int id)
+        public async Task<Product?> GetById(int id)
         {
             return await _context.Products.FirstOrDefaultAsync(p => p.ProductID == id);
         }
 
-        public async Task<Product?> Delete(int id)
+        public async Task<Product?> GetByIdWithStocks(int id)
         {
-            var product = await Get(id);
+            return await _context.Products
+                .Include(p => p.Stocks) // Stokları da dahil et
+                .FirstOrDefaultAsync(p => p.ProductID == id);
+        }
+
+        public async Task<Product?> GetByProductCode(string productCode)
+        {
+            return await _context.Products.FirstOrDefaultAsync(p => p.ProductCode == productCode);
+        }
+
+        public async Task<Product?> GetByProductCodeWithStocks(string productCode)
+        {
+            return await _context.Products
+                .Include(p => p.Stocks) // Stokları da dahil et
+                .FirstOrDefaultAsync(p => p.ProductCode == productCode);
+        }
+
+        public async Task<Product?> DeleteById(int id)
+        {
+            var product = await GetById(id);
             if (product != null)
             {
                 _context.Products.Remove(product);
@@ -38,7 +57,7 @@ namespace Inventory.Services
 
         public async Task Update(Product product)
         {
-            var existingProduct = await Get(product.ProductID);
+            var existingProduct = await GetById(product.ProductID);
             if (existingProduct == null)
             {
                 return;
@@ -61,25 +80,6 @@ namespace Inventory.Services
         public async Task<int> Count()
         {
             return await _context.Products.CountAsync();
-        }
-        
-        public async Task<Product?> GetWithStocks(int id)
-        {
-            return await _context.Products
-                .Include(p => p.Stocks) // Stokları da dahil et
-                .FirstOrDefaultAsync(p => p.ProductID == id);
-        }
-
-        public async Task<Product?> GetByProductCode(string productCode)
-        {
-            return await _context.Products.FirstOrDefaultAsync(p => p.ProductCode == productCode);
-        }
-
-        public async Task<Product?> GetByProductCodeWithStocks(string productCode)
-        {
-            return await _context.Products
-                .Include(p => p.Stocks) // Stokları da dahil et
-                .FirstOrDefaultAsync(p => p.ProductCode == productCode);
         }
 
         public async Task<(List<Product> Products, int TotalCount)> Search(string searchTerm, int pageIndex, int pageSize)

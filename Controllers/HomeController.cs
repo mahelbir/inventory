@@ -1,17 +1,17 @@
 using Inventory.Models;
+using Inventory.Services;
 using Inventory.ViewModels;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Inventory.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly UserService _userService;
 
-        public HomeController(UserManager<ApplicationUser> userManager)
+        public HomeController(UserService userService)
         {
-            _userManager = userManager;
+            _userService = userService;
         }
 
         // Anasayfa
@@ -20,7 +20,7 @@ namespace Inventory.Controllers
             var user = new ApplicationUser();
             if (User?.Identity?.IsAuthenticated == true)
             {
-                user = await _userManager.GetUserAsync(User);
+                user = await _userService.GetByPrincipal(User);
             }
 
             return View(user);

@@ -20,7 +20,7 @@ namespace Inventory.Controllers
             _productService = productService;
         }
 
-        // Ürüne göre listeleme
+        // Ürüne göre listeleme işlemi
         public async Task<IActionResult> Index(string productCode)
         {
             if (!Common.IsValidCode(productCode))
@@ -37,7 +37,7 @@ namespace Inventory.Controllers
             return View(product);
         }
 
-        // Silme
+        // Silme işlemi
         public async Task<IActionResult> Delete(int id)
         {
             if (!Common.IsValidID(id))
@@ -46,7 +46,7 @@ namespace Inventory.Controllers
             }
 
             // Kayıt varsa sil
-            var stock = await _stockService.Delete(id);
+            var stock = await _stockService.DeleteById(id);
             var productCode = stock != null ? stock.ProductCode : null;
 
             // Ürünün stok listesine yönlendir
@@ -126,7 +126,7 @@ namespace Inventory.Controllers
             }
 
             // Kayıt mevcut değilse hata göster
-            var stock = await _stockService.Get(id);
+            var stock = await _stockService.GetById(id);
             if (stock == null)
             {
                 return NotFound();

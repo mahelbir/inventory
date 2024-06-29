@@ -19,7 +19,7 @@ namespace Inventory.Controllers
             _productService = productService;
         }
 
-        // Listeleme
+        // Sayfalama yaparak listeleme işlemi
         public async Task<IActionResult> Index(string searchTerm, int pageIndex = 1)
         {
             var viewModel = new ProductListViewModel
@@ -42,7 +42,7 @@ namespace Inventory.Controllers
             }
 
             // Kayıt mevcut değilse hata göster
-            var product = await _productService.GetWithStocks(id);
+            var product = await _productService.GetByIdWithStocks(id);
             if (product == null)
             {
                 return NotFound();
@@ -61,7 +61,7 @@ namespace Inventory.Controllers
                 return BadRequest();
             }
 
-            await _productService.Delete(id);
+            await _productService.DeleteById(id);
 
             return RedirectToAction(nameof(Index));
         }
@@ -125,7 +125,7 @@ namespace Inventory.Controllers
             }
 
             // Kayıt mevcut değilse hata göster
-            var product = await _productService.Get(id);
+            var product = await _productService.GetById(id);
             if (product == null)
             {
                 return NotFound();

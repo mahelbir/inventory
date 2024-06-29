@@ -1,4 +1,4 @@
-﻿@model IEnumerable<Inventory.Models.ApplicationUser>
+﻿@model IEnumerable<Inventory.ViewModels.UserListItemViewModel>
 
 @{
     ViewData["Title"] = "Kullanıcı Listesi";
@@ -13,8 +13,8 @@
                     <tr>
                         <th>Kullanıcı Adı</th>
                         <th>Email</th>
-                        <th>İsim</th>
-                        <th>Soyisim</th>
+                        <th>Ad Soyad</th>
+                        <th>Durum</th>
                         <th>İşlemler</th>
                     </tr>
                 </thead>
@@ -24,15 +24,31 @@
                         <tr>
                             <td>@user.UserName</td>
                             <td>@user.Email</td>
-                            <td>@user.FirstName</td>
-                            <td>@user.LastName</td>
+                            <td>@user.FullName</td>
+                            <td>
+                                @if (user.IsActive)
+                                {
+                                    <span class="badge bg-success">Aktif</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Pasif</span>
+                                }
+                            </td>
                             <td>
                                 <a asp-action="Edit" asp-route-id="@user.Id" class="btn btn-sm btn-dark"><i class="fas fa-eye"></i></a>
                                 @if (!user.UserName.Equals(currentUser))
                                 {
                                     <a class="btn btn-sm btn-danger" onclick="confirmRedirect('@Url.Action("Delete", "Users", new { id = user.Id })');"><i class="fas fa-trash"></i></a>
-                                } else{
-                                    <a class="btn btn-sm btn-secondary" onclick="alert('Bu kullanıcı silinemez!')"><i class="fas fa-trash"></i></a>
+
+                                    @if (user.IsActive)
+                                    {
+                                        <a asp-action="ToggleStatus" asp-route-id="@user.Id" class="btn btn-sm btn-outline-danger" title="Durumu Pasif Yap"><i class="fas fa-times-circle"></i></a>
+                                    }
+                                    else
+                                    {
+                                        <a asp-action="ToggleStatus" asp-route-id="@user.Id" class="btn btn-sm btn-outline-success" title="Durumu Aktif Yap"><i class="fas fa-check-circle"></i></a>
+                                    }
                                 }
                             </td>
                         </tr>

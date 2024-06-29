@@ -45,6 +45,8 @@ builder.Services.ConfigureApplicationCookie(options =>
 // Register the services
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<StockService>();
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<RoleService>();
 
 builder.Services.AddControllersWithViews();
 
